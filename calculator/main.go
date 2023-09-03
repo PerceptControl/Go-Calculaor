@@ -22,15 +22,16 @@ func main() {
 
 	reader := bufio.NewReader(os.Stdin)
 	for true {
-		example_as_string, err := reader.ReadString('\n')
+		operation, err := reader.ReadString('\n')
 		if err != nil {
 			panic(err)
 		}
 
-		operator, operands, is_rome := parseLine(example_as_string)
+		operator, operands, is_rome := parseLine(operation)
 		
 		res := calculate(operator, operands[0], operands[1])
 		output := "" 
+		
 		if is_rome {
 			if res <= 0 {
 				panic("В римской системе нет отрицательных чисел и 0")
@@ -44,14 +45,14 @@ func main() {
 	}
 }
 
-func parseLine(str string) (operator rune, operands [2]int, is_rome bool) {
-	str = spaceFieldsJoin(str)
+func parseLine(operation string) (operator rune, operands [2]int, is_rome bool) {
+	operation = spaceFieldsJoin(operation)
 
-	operator, err := parseOperator(str) 
+	operator, err := parseOperator(operation) 
 	if err != nil {
 		panic(err)
 	}
-	operands_as_string := strings.Split(str, string(operator))
+	operands_as_string := strings.Split(operation, string(operator))
 
 	//если во второй части примера еще есть оператор то весь пример гарантированно некорректный
 	_, err = parseOperator(operands_as_string[1])
@@ -64,6 +65,7 @@ func parseLine(str string) (operator rune, operands [2]int, is_rome bool) {
 	return operator, operands, is_rome
 }
 
+//очищаем строку от всех внешних и внутренних пробелов
 func spaceFieldsJoin(str string) string {
 	return strings.Join(strings.Fields(str), "")
 }
@@ -85,7 +87,7 @@ func parseOperator(str string) (operator rune, err error) {
 }
 
 func parseOperands(operands_as_string []string) (operands [2]int, is_roman bool) {
-	if len(operands_as_string) > 2 {
+	if len(operands_as_string) != 2 {
 		panic(errors.New("Уравнение должно состоять из двух операндов и одного оператора"))
 	}
 	operand1, is_rome_1 := parseNumber(operands_as_string[0])
@@ -98,22 +100,22 @@ func parseOperands(operands_as_string []string) (operands [2]int, is_roman bool)
 	return [2]int{ operand1, operand2 }, is_rome_1
 }
 
-func parseNumber(str string) (result int, is_roman bool){
-	res, err := strconv.Atoi(str)
+func parseNumber(operand_as_string string) (result int, is_roman bool){
+	operand, err := strconv.Atoi(operand_as_string)
 	if err == nil {
-		if res < 1 || res > 10 {
+		if operand < 1 || operand > 10 {
 			panic("Число быть должно от 1 до 10 включительно")
 		}
-		return res, false
+		return operand, false
 	}
 
 
-	res, err = romannumeral.StringToInt(str)
+	operand, err = romannumeral.StringToInt(operand_as_string)
 	if err == nil {
-		if res < 1 || res > 10 {
+		if operand < 1 || operand > 10 {
 			panic("Число быть должно от 1 до 10 включительно")
 		}
-		return res, true
+		return operand, true
 	}
 
 	panic("Операнд должен быть корректным римским или арабским числом")
